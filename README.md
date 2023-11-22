@@ -16,4 +16,4 @@ ModelOps (Model Operations): this is a newer approach that focuses specifically 
 Utilizing one or more of these approaches for a project, depending on your unique case, is essential for ensuring that the model development and deployment process is efficient, effective, scalable, 
 and sustainable. Each approach has its strengths and weaknesses, and the choice will depend on your project’s specific needs and goals.
 
-API UR: http://192.168.0.165:80
+API URL: http://192.168.0.165:80
