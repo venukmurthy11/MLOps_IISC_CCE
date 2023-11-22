@@ -1,40 +1,28 @@
-name: new_app
+name: Continuous Deployment
 
 on:
   push:
     branches:
-      - main  
+      - main
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest  
-
+    runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2  
-
-      - name: Login to Docker Registry
-        run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
+        uses: actions/checkout@v2
+        
       - name: Build Docker Image
-        run: docker build -t new_app-image-name .
+        run: docker build -t fastapi-app .
       
+      - name: Run Docker Container
+        run: docker run -d -p 80:80 fastapi-app
 
-      - name: Push Docker Image to Registry
-        run: docker push new_app-image-name
+      - name: Retrieve Container IP
+        id: container_ip
+        run: echo ::set-output name=ip::$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -q))
 
-      # SSH Deployment to your server
-      - name: Deploy to Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            docker stop new_app-container || true
-            docker rm new_app-container || true
-            docker pull new_app-image-name
-            docker run -d -p 8080:8080 --name new_app-container new_app-image-name
+      - name: Update README with API URL
+        run: |
+          echo "API URL: http://${{ steps.container_ip.outputs.ip }}:80" > README.md
