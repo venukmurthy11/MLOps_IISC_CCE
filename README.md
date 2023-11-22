@@ -15,3 +15,5 @@ MLOps (Machine Learning Operations): refers to the set of practices for managing
 ModelOps (Model Operations): this is a newer approach that focuses specifically on the operationalization of machine learning models, with an emphasis on model monitoring, maintenance, and governance.
 Utilizing one or more of these approaches for a project, depending on your unique case, is essential for ensuring that the model development and deployment process is efficient, effective, scalable, 
 and sustainable. Each approach has its strengths and weaknesses, and the choice will depend on your project’s specific needs and goals.
+
+API UR: http://192.168.0.165:80
