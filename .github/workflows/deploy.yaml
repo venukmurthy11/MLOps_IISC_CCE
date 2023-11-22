@@ -1,25 +1,40 @@
-name: Deploy
+name: new_app
+
 on:
-  release:
-    types:
-      - created
-  workflow_dispatch:
-#   push:
-#     branches:
-#       - main  
+  push:
+    branches:
+      - main  
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy code
+  build-and-deploy:
+    runs-on: ubuntu-latest  
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Code deploy action step
-        uses: ./github-action-script/ 
-        id: deploy
+      - name: Checkout Code
+        uses: actions/checkout@v2  
+
+      - name: Login to Docker Registry
+        run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: docker build -t new_app-image-name .
+      
+
+      - name: Push Docker Image to Registry
+        run: docker push new_app-image-name
+
+      # SSH Deployment to your server
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
         with:
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          commit_id: ${{ github.sha }}
-          application_name: 'node-server'
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker stop new_app-container || true
+            docker rm new_app-container || true
+            docker pull new_app-image-name
+            docker run -d -p 8080:8080 --name new_app-container new_app-image-name
